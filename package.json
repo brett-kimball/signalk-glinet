@@ -1,0 +1,21 @@
+{
+  "name": "signalk-glinet",
+  "version": "1.0.0",
+  "description": "SignalK plugin that publishes status (system, WiFi, WAN, services, and cellular signal if present) from GL.iNet routers (stock firmware, e.g. GL-X3000 Spitz AX) via GL.iNet's JSON-RPC /rpc API.",
+  "main": "index.js",
+  "keywords": [
+    "signalk-node-server-plugin",
+    "signalk-category-communication",
+    "glinet"
+  ],
+  "author": "kees@s-ex.nl",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/keeskode/signalk-glinet"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "dependencies": {}
+}
