@@ -41,7 +41,7 @@ function to64(v, n) {
 }
 
 function md5Crypt(password, saltIn) {
-  const salt = String(saltIn).slice(0, 8);
+  const salt = String(saltIn).slice(0, 8); // MD5-crypt salt is max 8 chars (alg 5/6 allow 16)
   const pw = Buffer.from(password, 'utf8');
   const sp = Buffer.from(salt, 'utf8');
   const magic = Buffer.from('$1$', 'utf8');
@@ -154,9 +154,12 @@ class GlInetClient {
     }
 
     const { alg, salt, nonce } = challengeResp.result;
-    // hash-method is an optional field in the challenge response that specifies
-    // the outer hash algorithm. Older GL.iNet firmware omits it and uses MD5.
-    const hashMethod = challengeResp.result['hash-method'] || 'md5';
+
+    // hash-method declares the outer hash algorithm (the step that wraps the
+    // inner crypt hash with the nonce). When absent it mirrors the inner alg:
+    // alg 1 (MD5-crypt) → md5, alg 5 (SHA-256-crypt) → sha256, etc.
+    const ALG_OUTER_HASH = { 1: 'md5', 5: 'sha256', 6: 'sha512' };
+    const hashMethod = challengeResp.result['hash-method'] || ALG_OUTER_HASH[alg] || 'md5';
 
     if (alg !== 1) {
       // Only MD5-crypt (alg 1) is implemented. This is what stock
@@ -166,7 +169,7 @@ class GlInetClient {
       // (SHA-512-crypt) and login will fail here with a clear error
       // instead of silently sending a wrong hash.
       throw new Error(
-        `Router requested crypt algorithm ${alg}, but this plugin only supports alg 1 (MD5-crypt). ` +
+        `Router requested crypt algorithm ${alg} (hash-method: ${hashMethod}), but this plugin only supports alg 1 (MD5-crypt). ` +
           `Please open an issue with this value so support can be added.`
       );
     }
