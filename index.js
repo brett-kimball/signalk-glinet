@@ -154,6 +154,9 @@ class GlInetClient {
     }
 
     const { alg, salt, nonce } = challengeResp.result;
+    // hash-method is an optional field in the challenge response that specifies
+    // the outer hash algorithm. Older GL.iNet firmware omits it and uses MD5.
+    const hashMethod = challengeResp.result['hash-method'] || 'md5';
 
     if (alg !== 1) {
       // Only MD5-crypt (alg 1) is implemented. This is what stock
@@ -170,7 +173,7 @@ class GlInetClient {
 
     const cryptHash = md5Crypt(this.password, salt);
     const loginHash = crypto
-      .createHash('sha256')
+      .createHash(hashMethod)
       .update(`${this.username}:${cryptHash}:${nonce}`)
       .digest('hex');
 
